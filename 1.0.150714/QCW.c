@@ -14,10 +14,6 @@ int main(int arg)
 
 	char addr_command = "mystock/findstock/eurousd";
 	
-///dsdsdsds
-    fdsfsdfs
-        sdfsd
-        fsd
 
 	return 0;
 }

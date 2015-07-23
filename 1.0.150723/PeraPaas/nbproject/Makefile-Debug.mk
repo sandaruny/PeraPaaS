@@ -35,7 +35,9 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/qcw.o
+	${OBJECTDIR}/qcw.o \
+	${OBJECTDIR}/request_handler.o \
+	${OBJECTDIR}/service_register.o
 
 
 # C Compiler Flags
@@ -66,6 +68,16 @@ ${OBJECTDIR}/qcw.o: qcw.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/qcw.o qcw.c
+
+${OBJECTDIR}/request_handler.o: request_handler.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/request_handler.o request_handler.c
+
+${OBJECTDIR}/service_register.o: service_register.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/service_register.o service_register.c
 
 # Subprojects
 .build-subprojects:

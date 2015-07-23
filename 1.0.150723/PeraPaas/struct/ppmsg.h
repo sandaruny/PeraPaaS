@@ -2,7 +2,7 @@
  * File:   ppmsg.h
  * Author: Sandaruwan
  *
- * Created on July 23, 2015, 10:42 PM
+ * Created on July 23, 2015, 10:39 PM
  */
 struct Message
 {
@@ -10,5 +10,4 @@ struct Message
 	char * send_addr;
 	char * details; 
 	char state;
-        int lastCompletedStep;
 };
