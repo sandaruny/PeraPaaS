@@ -1,8 +1,8 @@
 /* 
- * File:   RequestHandler.c
+ * File:   request_handler.c
  * Author: Sandaruwan
  *
- * Created on July 23, 2015, 10:52 PM
+ * Created on July 24, 2015, 12:21 AM
  */
 
 #include <stdio.h>
@@ -11,10 +11,4 @@
 /*
  * 
  */
-int main(int argc, char** argv) {
-    
-    
-
-    return (EXIT_SUCCESS);
-}
 

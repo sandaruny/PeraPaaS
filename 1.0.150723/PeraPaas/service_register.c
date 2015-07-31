@@ -1,8 +1,8 @@
 /* 
- * File:   ServiceRegister.c
+ * File:   service_regggister.c
  * Author: Sandaruwan
  *
- * Created on July 23, 2015, 10:52 PM
+ * Created on July 24, 2015, 12:22 AM
  */
 
 #include <stdio.h>
@@ -11,8 +11,5 @@
 /*
  * 
  */
-int main(int argc, char** argv) {
 
-    return (EXIT_SUCCESS);
-}
 

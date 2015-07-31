@@ -4,11 +4,12 @@
  *
  * Created on July 23, 2015, 10:42 PM
  */
-struct Message
+struct message
 {
 	char * from_addr;
 	char * send_addr;
 	char * details; 
 	char state;
         int lastCompletedStep;
+        int msg_id;
 };

@@ -22,6 +22,14 @@ CND_ARTIFACT_PATH_Release=dist/Release/Cygwin_4.x-Windows/perapaas
 CND_PACKAGE_DIR_Release=dist/Release/Cygwin_4.x-Windows/package
 CND_PACKAGE_NAME_Release=perapaas.tar
 CND_PACKAGE_PATH_Release=dist/Release/Cygwin_4.x-Windows/package/perapaas.tar
+# NewConfiguration configuration
+CND_PLATFORM_NewConfiguration=Cygwin_4.x-Windows
+CND_ARTIFACT_DIR_NewConfiguration=dist/NewConfiguration/Cygwin_4.x-Windows
+CND_ARTIFACT_NAME_NewConfiguration=perapaas
+CND_ARTIFACT_PATH_NewConfiguration=dist/NewConfiguration/Cygwin_4.x-Windows/perapaas
+CND_PACKAGE_DIR_NewConfiguration=dist/NewConfiguration/Cygwin_4.x-Windows/package
+CND_PACKAGE_NAME_NewConfiguration=perapaas.tar
+CND_PACKAGE_PATH_NewConfiguration=dist/NewConfiguration/Cygwin_4.x-Windows/package/perapaas.tar
 #
 # include compiler specific variables
 #
