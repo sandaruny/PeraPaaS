@@ -40,6 +40,8 @@ int main(int argc, char**argv) {
 
     while (1) {
 
+        send(sockfd, sendline, strlen(sendline), 0);
+        
         n = recv(sockfd, recvline, 1000, 0);
         if(n < 1){
             break;

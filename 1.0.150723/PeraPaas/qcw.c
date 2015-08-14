@@ -18,7 +18,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <arpa/inet.h>
-#include<unistd.h>
+#include <unistd.h>
 
 #include <signal.h>
 
@@ -79,11 +79,9 @@ int main(int argc, char** argv) {
 
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
 
-
     servaddr.sin_family = PF_INET;
     servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // htonl(INADDR_ANY); //inet_addr("127.0.0.1");
     servaddr.sin_port = htons(32000);
-
 
 
     if (bind(sockfd, (struct sockaddr *) &servaddr, sizeof (servaddr)) == -1)
@@ -104,7 +102,6 @@ int main(int argc, char** argv) {
 
     struct timeval stop, start;
 
-
     pthread_t t0;
     if (pthread_create(&t0, NULL, request_balancer, NULL) == -1) {
         printf("Error in pthread for request balance");
@@ -119,16 +116,30 @@ int main(int argc, char** argv) {
 
         int connect_d = accept(sockfd, (struct sockaddr *) &client_addr, &address_size);
 
-
         if (connect_d == -1) {
             printf("Cannot open a socket");
             break;
         }
         web_req_count++;
 
+/*
         n = recvfrom(connect_d, mesg, 1000, 0, (struct
                 sockaddr*) &cliaddr, &len);
+    
+*/
         
+char *reply = 
+"HTTP/1.1 200 OK\n"
+"Date: Thu, 19 Feb 2009 12:27:04 GMT\n"
+"Server: Apache/2.2.3\n"
+"Last-Modified: Wed, 18 Jun 2003 16:05:58 GMT\n"
+"ETag: \"56d-9989200-1132c580\"\n"
+"Content-Type: text/html\n"
+"Content-Length: 15\n"
+"Accept-Ranges: bytes\n"
+"Connection: close\n"
+"\n"
+"sdfkjsdnbfkjbsf";
 
         printf("Recieved: %d\n", web_req_count);
         int pid = fork();
@@ -139,15 +150,20 @@ int main(int argc, char** argv) {
                 banner = asctime(timeinfo);
                 time(&rawtime);
                 timeinfo = localtime(&rawtime);
+                n = recvfrom(connect_d, mesg, 1000, 0, (struct
+                sockaddr*) &cliaddr, &len);
+                mesg[n] = '\0';
+                puts(mesg);
                 sleep(1);
-                send(connect_d, banner, strlen(banner), 0);
+                send(connect_d, reply, strlen(mesg), 0);
                 int line_cnt = 0;
-                printf("Recieved \n");
+                printf("Recieved %s\n", mesg);
 
             }
         }
 
     }
+    
     return (EXIT_SUCCESS);
 }
 
