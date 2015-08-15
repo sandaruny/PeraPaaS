@@ -1,0 +1,9 @@
+Exception: STATUS_ACCESS_VIOLATION at eip=6113869F
+eax=00000000 ebx=00403276 ecx=00000000 edx=00000000 esi=00000000 edi=00000000
+ebp=0028CC78 esp=0028C6A0 program=C:\cygwin\http%3a%2f%2fmirrors.163.com%2fcygwin%2f\x86\home\Sandaruwan\Projects\PeraServer\PeraPaaS\1.0.150723\PeraPaas\dist\Debug\Cygwin_4.x-Windows\perapaas.exe, pid 4956, thread main
+cs=0023 ds=002B es=002B fs=0053 gs=002B ss=002B
+Stack trace:
+Frame     Function  Args
+0028CC78  6113869F (00000001, 0028CC9C, 80010100, 610083CF)
+0028CD28  6100842E (00000000, 0028CD84, 61007530, 00000000)
+End of stack trace

@@ -142,8 +142,11 @@ char *reply =
 "sdfkjsdnbfkjbsf";
 
         printf("Recieved: %d\n", web_req_count);
+        char * ref = "Referer:";
         int pid = fork();
 
+        
+        
         if (pid == 0) {
 
             while (1) {
@@ -158,7 +161,11 @@ char *reply =
                 send(connect_d, reply, strlen(mesg), 0);
                 int line_cnt = 0;
                 printf("Recieved %s\n", mesg);
-
+                
+                char * mk = strstr(mesg, ref);
+              //  mk = strstr(mk, "//");
+               printf("found>>> %s\n", mk);
+                
             }
         }
 
