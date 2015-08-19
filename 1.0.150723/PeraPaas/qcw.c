@@ -168,6 +168,7 @@ int main(int argc, char** argv) {
                 
             }
             
+            
             printf("RP and MP %d : %d \n", read_pointer, msg_pointer);
             sleep(1);
         }
