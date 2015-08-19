@@ -29,6 +29,7 @@
 int listener_d;
 
 void* request_balancer();
+void * request_handler();
 void error(char *msg);
 
 void handle_shutdown(int sig);
@@ -48,15 +49,42 @@ void register_sigkill_fn() {
 
 int const QUEUE_SIZE = 100;
 
-static int pool_size = 0, *web_req_count = 0, msg_pointer = 0;
+static int pool_size = 0, web_req_count = 0, msg_pointer = 0, read_pointer =0;
+
+
+char *reply =
+        "HTTP/1.1 200 OK\n"
+        "Date: Thu, 19 Feb 2009 12:27:04 GMT\n"
+        "Server: Apache/2.2.3\n"
+        "Last-Modified: Wed, 18 Jun 2003 16:05:58 GMT\n"
+        "ETag: \"56d-9989200-1132c580\"\n"
+        "Content-Type: text/html\n"
+        "Content-Length: 15\n"
+        "Accept-Ranges: bytes\n"
+        "Connection: close\n"
+        "\n"
+        "sdfkjsdnbfkjbsf";
+
+//     printf("Recieved: %d\n", web_req_count);
+char * ref = "Referer:";
+struct message msg;
+struct message msg_queue[1000];
+
+int sockfd, n;
+
+struct sockaddr_in servaddr, cliaddr;
+socklen_t len;
+char mesg[1000];
+
+
+int connect_d;
 
 int main(int argc, char** argv) {
 
     char addr_command[] = "mystock/findstock/eurousd";
 
 
-    struct message msg;
-    struct message msg_queue[QUEUE_SIZE];
+
 
     int qcw_count, msg_count = 0;
 
@@ -72,10 +100,7 @@ int main(int argc, char** argv) {
     }
 
 
-    int sockfd, n;
-    struct sockaddr_in servaddr, cliaddr;
-    socklen_t len;
-    char mesg[1000];
+
 
 
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
@@ -84,6 +109,12 @@ int main(int argc, char** argv) {
     servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // htonl(INADDR_ANY); //inet_addr("127.0.0.1");
     servaddr.sin_port = htons(32000);
 
+    int yes = 1;
+
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof (int)) == -1) {
+        perror("setsockopt");
+        exit(1);
+    }
 
     if (bind(sockfd, (struct sockaddr *) &servaddr, sizeof (servaddr)) == -1)
         error("Can't bind the port");
@@ -98,32 +129,73 @@ int main(int argc, char** argv) {
     timeinfo = localtime(&rawtime);
     printf("Current local time and date: %s", asctime(timeinfo));
     //	printf("IP %s\n", servaddr.sin_addr.s_addr);
-    char* banner = "Hello UDP client! This is UDP server";
+
+
+    char* banner;
 
 
     struct timeval stop, start;
 
-    pthread_t t0;
-    if (pthread_create(&t0, NULL, request_balancer, NULL) == -1) {
-        printf("Error in pthread for request balance");
+    signal(SIGCHLD, SIG_IGN);
+    pid_t pid_req_handler = fork();
+
+    //printf("PIDS %d", getpid());
+
+    if (pid_req_handler == 0) {
+
+        printf("PIDS %d \n", getpid());
+
+        pthread_t t0;
+        if (pthread_create(&t0, NULL, request_balancer, NULL) == -1) {
+            printf("Error in pthread for request balance");
+        }
     }
+    
 
     if (listen(sockfd, 10) == -1)
         error("Can't listen");
 
 
-
+    pid_t pid_qcw_handler = fork();
+    if(pid_qcw_handler == 0){
+        while(1){
+            while(read_pointer != msg_pointer){
+                if(msg_queue[read_pointer].state == 'd'){
+                    send(connect_d, reply, strlen(mesg), 0);
+                    printf("Mesg Dequued %d\n", read_pointer);
+                }
+                read_pointer ++;
+                
+            }
+            
+            printf("RP and MP %d : %d \n", read_pointer, msg_pointer);
+            sleep(1);
+        }
+        
+    }
+    
+    
+    
     while (1) {
         struct sockaddr_storage client_addr;
         unsigned int address_size = sizeof (client_addr);
 
-        int connect_d = accept(sockfd, (struct sockaddr *) &client_addr, &address_size);
+        connect_d = accept(sockfd, (struct sockaddr *) &client_addr, &address_size);
 
         if (connect_d == -1) {
             printf("Cannot open a socket");
             break;
         }
+
+
+
         web_req_count++;
+        pthread_t t_handler;
+        if (pthread_create(&t_handler, NULL, request_handler, NULL) == -1) {
+            printf("Error in pthread for request balance");
+        }
+
+
 
         /*
                 n = recvfrom(connect_d, mesg, 1000, 0, (struct
@@ -131,64 +203,19 @@ int main(int argc, char** argv) {
     
          */
 
-        char *reply =
-                "HTTP/1.1 200 OK\n"
-                "Date: Thu, 19 Feb 2009 12:27:04 GMT\n"
-                "Server: Apache/2.2.3\n"
-                "Last-Modified: Wed, 18 Jun 2003 16:05:58 GMT\n"
-                "ETag: \"56d-9989200-1132c580\"\n"
-                "Content-Type: text/html\n"
-                "Content-Length: 15\n"
-                "Accept-Ranges: bytes\n"
-                "Connection: close\n"
-                "\n"
-                "sdfkjsdnbfkjbsf";
 
-   //     printf("Recieved: %d\n", web_req_count);
-        char * ref = "Referer:";
-        int pid = fork();
+        /*
+                int pid = fork();
 
 
 
-        if (pid == 0) {
+                if (pid == 0) {
 
-            while (1) {
-                banner = asctime(timeinfo);
-                time(&rawtime);
-                timeinfo = localtime(&rawtime);
-                n = recvfrom(connect_d, mesg, 1000, 0, (struct
-                        sockaddr*) &cliaddr, &len);
 
-                if (n == 0) {
-                    return;
+
+
                 }
-
-
-                mesg[n] = '\0';
-            //    puts(mesg);
-                msg_queue[msg_pointer].details = addr_command;
-                msg_queue[msg_pointer].state = 'd';
-                msg_queue[msg_pointer].msg_id = msg_count;
-
-                ++msg_pointer;
-                
-                printf("MSSG POINTER >>>>>>>>>> %d \n", msg_pointer);
-                
-                //  sleep(1);
-                send(connect_d, reply, strlen(mesg), 0);
-
-
-
-                int line_cnt = 0;
-          //      printf("Recieved %d %s\n", n, mesg);
-
-                char * mk = strstr(mesg, ref);
-                //  mk = strstr(mk, "//");
-                printf("found>>> %s\n", mk);
-
-            }
-        }
-
+         */
     }
 
     return (EXIT_SUCCESS);
@@ -213,4 +240,58 @@ void handle_shutdown(int sig) {
         close(listener_d);
     fprintf(stderr, "Bye!\n");
     exit(0);
+}
+
+void * request_handler() {
+    char* banner;
+
+    time_t rawtime;
+    struct tm * timeinfo;
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+
+    while (1) {
+        banner = asctime(timeinfo);
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
+        int no = recvfrom(connect_d, mesg, 1000, 0, (struct
+                sockaddr*) &cliaddr, &len);
+
+        if (no == 0) {
+            return;
+        }
+
+
+        mesg[no] = '\0';
+        //    puts(mesg);
+
+        if (msg_queue[msg_pointer].state != 's') {
+
+            msg_queue[msg_pointer].details = 'hello';
+            msg_queue[msg_pointer].state = 'd';
+            msg_queue[msg_pointer].msg_id = msg_pointer;
+
+        }
+        ++msg_pointer;
+
+        printf("MSSG POINTER >>>>>>>>>> %d \n", msg_pointer);
+
+        //  sleep(1);
+       // send(connect_d, reply, strlen(mesg), 0);
+
+
+
+        int line_cnt = 0;
+        //      printf("Recieved %d %s\n", no, mesg);
+
+        char * mk = strstr(mesg, ref);
+        //  mk = strstr(mk, "//");
+        printf("found>>> %s\n", mk);
+
+    }
+    
+    
+    
 }
