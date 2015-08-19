@@ -165,7 +165,7 @@ char *reply =
                 char * mk = strstr(mesg, ref);
               //  mk = strstr(mk, "//");
                printf("found>>> %s\n", mk);
-                
+               
             }
         }
 
