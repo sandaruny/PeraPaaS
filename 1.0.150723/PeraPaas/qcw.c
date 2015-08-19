@@ -33,7 +33,8 @@ void error(char *msg);
 
 void handle_shutdown(int sig);
 void register_sigkill_fn();
-void register_sigkill_fn(){
+
+void register_sigkill_fn() {
 
     if (signal(SIGUSR1, handle_shutdown) == SIG_ERR)
         printf("\ncan't catch SIGUSR1\n");
@@ -41,25 +42,25 @@ void register_sigkill_fn(){
         printf("\ncan't catch SIGKILL\n");
     if (signal(SIGSTOP, handle_shutdown) == SIG_ERR)
         printf("\ncan't catch SIGSTOP\n");
-    
+
 }
 
 
+int const QUEUE_SIZE = 100;
 
-
-static int pool_size = 0, *web_req_count = 0;
+static int pool_size = 0, *web_req_count = 0, msg_pointer = 0;
 
 int main(int argc, char** argv) {
 
     char addr_command[] = "mystock/findstock/eurousd";
 
-    
+
     struct message msg;
-    struct message msg_queue[3];
+    struct message msg_queue[QUEUE_SIZE];
 
     int qcw_count, msg_count = 0;
 
-    for (qcw_count = 0; qcw_count < 3; qcw_count++) {
+    for (qcw_count = 0; qcw_count < QUEUE_SIZE; qcw_count++) {
         //  msg_queue[qcw_count] = malloc(sizeof(struct message));
         msg_queue[qcw_count].details = addr_command;
         msg_queue[qcw_count].state = 'd';
@@ -110,6 +111,8 @@ int main(int argc, char** argv) {
     if (listen(sockfd, 10) == -1)
         error("Can't listen");
 
+
+
     while (1) {
         struct sockaddr_storage client_addr;
         unsigned int address_size = sizeof (client_addr);
@@ -122,31 +125,31 @@ int main(int argc, char** argv) {
         }
         web_req_count++;
 
-/*
-        n = recvfrom(connect_d, mesg, 1000, 0, (struct
-                sockaddr*) &cliaddr, &len);
+        /*
+                n = recvfrom(connect_d, mesg, 1000, 0, (struct
+                        sockaddr*) &cliaddr, &len);
     
-*/
-        
-char *reply = 
-"HTTP/1.1 200 OK\n"
-"Date: Thu, 19 Feb 2009 12:27:04 GMT\n"
-"Server: Apache/2.2.3\n"
-"Last-Modified: Wed, 18 Jun 2003 16:05:58 GMT\n"
-"ETag: \"56d-9989200-1132c580\"\n"
-"Content-Type: text/html\n"
-"Content-Length: 15\n"
-"Accept-Ranges: bytes\n"
-"Connection: close\n"
-"\n"
-"sdfkjsdnbfkjbsf";
+         */
 
-        printf("Recieved: %d\n", web_req_count);
+        char *reply =
+                "HTTP/1.1 200 OK\n"
+                "Date: Thu, 19 Feb 2009 12:27:04 GMT\n"
+                "Server: Apache/2.2.3\n"
+                "Last-Modified: Wed, 18 Jun 2003 16:05:58 GMT\n"
+                "ETag: \"56d-9989200-1132c580\"\n"
+                "Content-Type: text/html\n"
+                "Content-Length: 15\n"
+                "Accept-Ranges: bytes\n"
+                "Connection: close\n"
+                "\n"
+                "sdfkjsdnbfkjbsf";
+
+   //     printf("Recieved: %d\n", web_req_count);
         char * ref = "Referer:";
         int pid = fork();
 
-        
-        
+
+
         if (pid == 0) {
 
             while (1) {
@@ -154,23 +157,40 @@ char *reply =
                 time(&rawtime);
                 timeinfo = localtime(&rawtime);
                 n = recvfrom(connect_d, mesg, 1000, 0, (struct
-                sockaddr*) &cliaddr, &len);
+                        sockaddr*) &cliaddr, &len);
+
+                if (n == 0) {
+                    return;
+                }
+
+
                 mesg[n] = '\0';
-                puts(mesg);
-                sleep(1);
-                send(connect_d, reply, strlen(mesg), 0);
-                int line_cnt = 0;
-                printf("Recieved %s\n", mesg);
+            //    puts(mesg);
+                msg_queue[msg_pointer].details = addr_command;
+                msg_queue[msg_pointer].state = 'd';
+                msg_queue[msg_pointer].msg_id = msg_count;
+
+                ++msg_pointer;
                 
+                printf("MSSG POINTER >>>>>>>>>> %d \n", msg_pointer);
+                
+                //  sleep(1);
+                send(connect_d, reply, strlen(mesg), 0);
+
+
+
+                int line_cnt = 0;
+          //      printf("Recieved %d %s\n", n, mesg);
+
                 char * mk = strstr(mesg, ref);
-              //  mk = strstr(mk, "//");
-               printf("found>>> %s\n", mk);
-               
+                //  mk = strstr(mk, "//");
+                printf("found>>> %s\n", mk);
+
             }
         }
 
     }
-    
+
     return (EXIT_SUCCESS);
 }
 
