@@ -12,6 +12,7 @@ struct message
 	char state;
         int lastCompletedStep;
         int msg_id;
+        int connection_id;
 };
 
 

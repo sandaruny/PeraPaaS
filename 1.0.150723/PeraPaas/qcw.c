@@ -28,8 +28,9 @@
 
 int listener_d;
 
-void* request_balancer();
-void * request_handler();
+void * request_balancer();
+void * request_handler(void * conn);
+void * queue_com();
 void error(char *msg);
 
 void handle_shutdown(int sig);
@@ -49,7 +50,7 @@ void register_sigkill_fn() {
 
 int const QUEUE_SIZE = 100;
 
-static int pool_size = 0, web_req_count = 0, msg_pointer = 0, read_pointer =0;
+static int pool_size = 0, web_req_count = 0, msg_pointer = 0, read_pointer = 0;
 
 
 char *reply =
@@ -83,9 +84,6 @@ int main(int argc, char** argv) {
 
     char addr_command[] = "mystock/findstock/eurousd";
 
-
-
-
     int qcw_count, msg_count = 0;
 
     for (qcw_count = 0; qcw_count < QUEUE_SIZE; qcw_count++) {
@@ -98,10 +96,6 @@ int main(int argc, char** argv) {
     for (qcw_count = 0; qcw_count < 3; qcw_count++) {
         printf("message %d\n", msg_queue[qcw_count].msg_id);
     }
-
-
-
-
 
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
 
@@ -150,49 +144,73 @@ int main(int argc, char** argv) {
             printf("Error in pthread for request balance");
         }
     }
-    
+
 
     if (listen(sockfd, 10) == -1)
         error("Can't listen");
 
 
     pid_t pid_qcw_handler = fork();
-    if(pid_qcw_handler == 0){
-        while(1){
-            while(read_pointer != msg_pointer){
-                if(msg_queue[read_pointer].state == 'd'){
+
+    if (pid_qcw_handler < 0) {
+        error("Error in QCW Process");
+    }
+
+    int pipe_qcw[2];
+    if (pipe(pipe_qcw)) {
+        error("Create pipe");
+        return -1;
+    }
+
+    
+    // QCW Handler 
+    if (pid_qcw_handler == 0) {
+
+        
+        
+        
+        while (1) {
+            while (read_pointer != msg_pointer) {
+                if (msg_queue[read_pointer].state == 'd') {
                     send(connect_d, reply, strlen(mesg), 0);
                     printf("Mesg Dequued %d\n", read_pointer);
                 }
-                read_pointer ++;
-                
+                read_pointer++;
+
             }
-            
-            
+
+
             printf("RP and MP %d : %d \n", read_pointer, msg_pointer);
             sleep(1);
         }
-        
+
+    }else if(pid_qcw_handler > 0){
+        pthread_t t_queue_com;
+        if (pthread_create(&t_queue_com, NULL, queue_com, NULL) == -1) {
+            printf("Error in pthread for request balance");
+        }
     }
-    
-    
-    
+
+
+
     while (1) {
         struct sockaddr_storage client_addr;
         unsigned int address_size = sizeof (client_addr);
 
-        connect_d = accept(sockfd, (struct sockaddr *) &client_addr, &address_size);
+        int connect_e = accept(sockfd, (struct sockaddr *) &client_addr, &address_size);
 
-        if (connect_d == -1) {
+        if (connect_e == -1) {
             printf("Cannot open a socket");
             break;
         }
 
 
-
+        printf("Socket conn %d\n", connect_e);
+        
+        
         web_req_count++;
         pthread_t t_handler;
-        if (pthread_create(&t_handler, NULL, request_handler, NULL) == -1) {
+        if (pthread_create(&t_handler, NULL, request_handler, (void *) &connect_e) == -1) {
             printf("Error in pthread for request balance");
         }
 
@@ -243,9 +261,11 @@ void handle_shutdown(int sig) {
     exit(0);
 }
 
-void * request_handler() {
+void * request_handler(void * conn) {
     char* banner;
+    int connect_e = *(int *)conn;
 
+    printf("Handler conn %d\n", connect_e);
     time_t rawtime;
     struct tm * timeinfo;
 
@@ -257,11 +277,15 @@ void * request_handler() {
         banner = asctime(timeinfo);
         time(&rawtime);
         timeinfo = localtime(&rawtime);
-        int no = recvfrom(connect_d, mesg, 1000, 0, (struct
+        int no = recvfrom(connect_e, mesg, 1000, 0, (struct
                 sockaddr*) &cliaddr, &len);
 
-        if (no == 0) {
-            return;
+        if (no < 0) {
+
+            error("Error in recieving");
+            
+        } else if (no == 0) {
+            return 1;
         }
 
 
@@ -273,14 +297,15 @@ void * request_handler() {
             msg_queue[msg_pointer].details = 'hello';
             msg_queue[msg_pointer].state = 'd';
             msg_queue[msg_pointer].msg_id = msg_pointer;
+            msg_queue[msg_pointer].connection_id = connect_e;
 
         }
         ++msg_pointer;
 
-        printf("MSSG POINTER >>>>>>>>>> %d \n", msg_pointer);
+        printf("MSSG POINTER %d >>>>>>>>>> %d \n", no, msg_pointer);
 
         //  sleep(1);
-       // send(connect_d, reply, strlen(mesg), 0);
+        //send(connect_e, reply, strlen(reply), 0);
 
 
 
@@ -289,9 +314,12 @@ void * request_handler() {
 
         char * mk = strstr(mesg, ref);
         //  mk = strstr(mk, "//");
-        printf("found>>> %s\n", mk);
+        //    printf("found>>> %s\n", mk);
 
     }
+}
+
+void * queue_com(){
     
     
     
