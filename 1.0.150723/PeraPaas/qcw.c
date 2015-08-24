@@ -70,7 +70,8 @@ char *reply =
         "sdfkjsdnbfkjbsf";
 
 //     printf("Recieved: %d\n", web_req_count);
-char * ref = "Referer:";
+char * ref = "GET";
+char * find = "HTTP";
 struct message msg;
 struct message msg_queue[1000];
 
@@ -79,6 +80,7 @@ int sockfd, n;
 struct sockaddr_in servaddr, cliaddr;
 socklen_t len;
 char mesg[1000];
+char getMsg[1000];
 
 
 int connect_d;
@@ -298,7 +300,11 @@ void * request_handler(void * conn) {
 
 
         mesg[no] = '\0';
+<<<<<<< HEAD
+            puts(mesg);
+=======
         puts(mesg);
+>>>>>>> 02ecc38892ba8fae2a392b279a92ffa81fed565a
 
         if (msg_queue[msg_pointer].state != 's') {
             msg_queue[msg_pointer].details = 'hello';
@@ -312,14 +318,25 @@ void * request_handler(void * conn) {
         printf("MSSG POINTER %d >>>>>>>>>> %d \n", no, msg_pointer);
 
         //  sleep(1);
+<<<<<<< HEAD
 
         //    send(connect_e, reply, strlen(reply), 0);
+=======
+        send(connect_e, reply, strlen(reply), 0);
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> 02ecc38892ba8fae2a392b279a92ffa81fed565a
+>>>>>>> bb9b480dc7277081a699f2a49db51d0ebab51341
 
         int line_cnt = 0;
-        //      printf("Recieved %d %s\n", no, mesg);
+        //      printf("Received %d %s\n", no, mesg);
 
         char * mk = strstr(mesg, ref);
+        char * subStr = strstr(mk, find);
         //  mk = strstr(mk, "//");
+<<<<<<< HEAD
         //  printf("found>>> %s\n", mk);
 
         struct node * cont = contain_url("/hello");
@@ -331,6 +348,31 @@ void * request_handler(void * conn) {
             send(connect_e, reply, strlen(reply), 0);
         }
 
+=======
+<<<<<<< HEAD
+        int count1 = strlen(mk);
+        int count2 = strlen(subStr);
+        int count3 = strlen(mesg);
+        int lengthStr = count1 - count2;
+        int startLen = count3 - count1; 
+        
+        int c=0;
+        //printf("%d",lengthStr);
+        
+        while(c<lengthStr-5){
+        
+            //printf('%c',mesg[count1+c-1]);
+            getMsg[c] = mesg[startLen+c+5 ];
+            c++;
+        }
+        
+        getMsg[c] = '\0';
+        
+           printf("found>>> %s \n ", getMsg);
+=======
+        printf("found>>> %s\n", mk);
+>>>>>>> 02ecc38892ba8fae2a392b279a92ffa81fed565a
+>>>>>>> bb9b480dc7277081a699f2a49db51d0ebab51341
 
     }
 }

@@ -15,6 +15,7 @@ int main( int argc, char *argv[] ) {
 		if (file) {
 			
 			while ((nread = fread(buf, 1, sizeof buf, file)) > 0)
+				buf[nread] = '\0';
 				fwrite(buf, 1, nread, stdout);
 			if (ferror(file)) {
 			/* deal with error */
@@ -26,15 +27,27 @@ int main( int argc, char *argv[] ) {
 		{
 			count = 0;
 			for(i=0;i<strlen(buf);i++){
-				if(i==0){
-					appendStr = ()
-						fputc(,fp);
-				}else{	
+				if(count == 0){
+					fputc('{',fp);
 					fputc(buf[i],fp);
-				}	
+					count++;
+				}else if (buf[i+1] == '\0'){
+					fputc('}',fp);
+					fputc(buf[i],fp);
+					//fputc(buf[i+1],fp);
+					break;
+				
+				}else if (count == 3 && buf[i] == '\n'){
+					fputc('}',fp);
+					fputc(buf[i],fp);
+					count =0;
+				}else if (buf[i]=='\n'){	
+					fputc(',',fp);
+					count++;
+				}else{	
 			//fputs("\n",fp);
-			//fputs(buf, fp);
-			
+					fputc(buf[i], fp);
+				}
 			}
 			fclose(fp);
 		}
