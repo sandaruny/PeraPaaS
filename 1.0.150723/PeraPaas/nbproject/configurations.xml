@@ -13,6 +13,7 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <itemPath>/home/san/Documents/git-repos/PeraPaaS/1.0.150723/PeraPaas/module/HelloService.c</itemPath>
       <itemPath>qcw.c</itemPath>
       <itemPath>request_handler.c</itemPath>
       <itemPath>service_register.c</itemPath>
@@ -51,6 +52,11 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="/home/san/Documents/git-repos/PeraPaaS/1.0.150723/PeraPaas/module/HelloService.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="ppmsg.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="qcw.c" ex="false" tool="0" flavor2="0">
@@ -80,6 +86,11 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="/home/san/Documents/git-repos/PeraPaaS/1.0.150723/PeraPaas/module/HelloService.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="ppmsg.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="qcw.c" ex="false" tool="0" flavor2="0">
@@ -97,6 +108,11 @@
       </toolsSet>
       <compileType>
       </compileType>
+      <item path="/home/san/Documents/git-repos/PeraPaaS/1.0.150723/PeraPaas/module/HelloService.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="ppmsg.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="qcw.c" ex="false" tool="0" flavor2="0">

@@ -112,6 +112,19 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
+
+
+    struct node * root = malloc(sizeof (struct node));
+    root -> next = 0;
+    
+    root->hashCode = 10;
+    root ->url ="/hello";
+
+
+
+
+
+
     if (bind(sockfd, (struct sockaddr *) &servaddr, sizeof (servaddr)) == -1)
         error("Can't bind the port");
 
@@ -164,13 +177,10 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    
+
     // QCW Handler 
     if (pid_qcw_handler == 0) {
 
-        
-        
-        
         while (1) {
             while (read_pointer != msg_pointer) {
                 if (msg_queue[read_pointer].state == 'd') {
@@ -178,15 +188,13 @@ int main(int argc, char** argv) {
                     printf("Mesg Dequued %d\n", read_pointer);
                 }
                 read_pointer++;
-
             }
-
 
             printf("RP and MP %d : %d \n", read_pointer, msg_pointer);
             sleep(1);
         }
 
-    }else if(pid_qcw_handler > 0){
+    } else if (pid_qcw_handler > 0) {
         pthread_t t_queue_com;
         if (pthread_create(&t_queue_com, NULL, queue_com, NULL) == -1) {
             printf("Error in pthread for request balance");
@@ -206,10 +214,8 @@ int main(int argc, char** argv) {
             break;
         }
 
-
         printf("Socket conn %d\n", connect_e);
-        
-        
+
         web_req_count++;
         pthread_t t_handler;
         if (pthread_create(&t_handler, NULL, request_handler, (void *) &connect_e) == -1) {
@@ -265,7 +271,7 @@ void handle_shutdown(int sig) {
 
 void * request_handler(void * conn) {
     char* banner;
-    int connect_e = *(int *)conn;
+    int connect_e = *(int *) conn;
 
     printf("Handler conn %d\n", connect_e);
     time_t rawtime;
@@ -283,19 +289,21 @@ void * request_handler(void * conn) {
                 sockaddr*) &cliaddr, &len);
 
         if (no < 0) {
-
             error("Error in recieving");
-            
+
         } else if (no == 0) {
             return 1;
         }
 
 
         mesg[no] = '\0';
+<<<<<<< HEAD
             puts(mesg);
+=======
+        puts(mesg);
+>>>>>>> 02ecc38892ba8fae2a392b279a92ffa81fed565a
 
         if (msg_queue[msg_pointer].state != 's') {
-
             msg_queue[msg_pointer].details = 'hello';
             msg_queue[msg_pointer].state = 'd';
             msg_queue[msg_pointer].msg_id = msg_pointer;
@@ -308,8 +316,11 @@ void * request_handler(void * conn) {
 
         //  sleep(1);
         send(connect_e, reply, strlen(reply), 0);
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 02ecc38892ba8fae2a392b279a92ffa81fed565a
 
         int line_cnt = 0;
         //      printf("Received %d %s\n", no, mesg);
@@ -317,6 +328,7 @@ void * request_handler(void * conn) {
         char * mk = strstr(mesg, ref);
         char * subStr = strstr(mk, find);
         //  mk = strstr(mk, "//");
+<<<<<<< HEAD
         int count1 = strlen(mk);
         int count2 = strlen(subStr);
         int count3 = strlen(mesg);
@@ -336,12 +348,15 @@ void * request_handler(void * conn) {
         getMsg[c] = '\0';
         
            printf("found>>> %s \n ", getMsg);
+=======
+        printf("found>>> %s\n", mk);
+>>>>>>> 02ecc38892ba8fae2a392b279a92ffa81fed565a
 
     }
 }
 
-void * queue_com(){
-    
-    
-    
+void * queue_com() {
+
+
+
 }

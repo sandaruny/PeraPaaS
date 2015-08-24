@@ -12,3 +12,16 @@
  * 
  */
 
+
+int main(int argc, char** argv) {
+
+
+    while (1) {
+        printf("QDD>> Define Deployment ");
+
+        scanf();
+
+    }
+
+}
+
