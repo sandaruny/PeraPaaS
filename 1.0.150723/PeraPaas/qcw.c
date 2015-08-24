@@ -162,13 +162,10 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    
+
     // QCW Handler 
     if (pid_qcw_handler == 0) {
 
-        
-        
-        
         while (1) {
             while (read_pointer != msg_pointer) {
                 if (msg_queue[read_pointer].state == 'd') {
@@ -176,15 +173,13 @@ int main(int argc, char** argv) {
                     printf("Mesg Dequued %d\n", read_pointer);
                 }
                 read_pointer++;
-
             }
-
 
             printf("RP and MP %d : %d \n", read_pointer, msg_pointer);
             sleep(1);
         }
 
-    }else if(pid_qcw_handler > 0){
+    } else if (pid_qcw_handler > 0) {
         pthread_t t_queue_com;
         if (pthread_create(&t_queue_com, NULL, queue_com, NULL) == -1) {
             printf("Error in pthread for request balance");
@@ -204,10 +199,8 @@ int main(int argc, char** argv) {
             break;
         }
 
-
         printf("Socket conn %d\n", connect_e);
-        
-        
+
         web_req_count++;
         pthread_t t_handler;
         if (pthread_create(&t_handler, NULL, request_handler, (void *) &connect_e) == -1) {
@@ -263,7 +256,7 @@ void handle_shutdown(int sig) {
 
 void * request_handler(void * conn) {
     char* banner;
-    int connect_e = *(int *)conn;
+    int connect_e = *(int *) conn;
 
     printf("Handler conn %d\n", connect_e);
     time_t rawtime;
@@ -281,16 +274,15 @@ void * request_handler(void * conn) {
                 sockaddr*) &cliaddr, &len);
 
         if (no < 0) {
-
             error("Error in recieving");
-            
+
         } else if (no == 0) {
             return 1;
         }
 
 
         mesg[no] = '\0';
-        //    puts(mesg);
+        puts(mesg);
 
         if (msg_queue[msg_pointer].state != 's') {
 
@@ -305,7 +297,7 @@ void * request_handler(void * conn) {
         printf("MSSG POINTER %d >>>>>>>>>> %d \n", no, msg_pointer);
 
         //  sleep(1);
-        //send(connect_e, reply, strlen(reply), 0);
+        send(connect_e, reply, strlen(reply), 0);
 
 
 
@@ -314,13 +306,13 @@ void * request_handler(void * conn) {
 
         char * mk = strstr(mesg, ref);
         //  mk = strstr(mk, "//");
-        //    printf("found>>> %s\n", mk);
+        printf("found>>> %s\n", mk);
 
     }
 }
 
-void * queue_com(){
-    
-    
-    
+void * queue_com() {
+
+
+
 }

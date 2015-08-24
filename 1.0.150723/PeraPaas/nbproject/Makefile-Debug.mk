@@ -35,6 +35,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/_ext/399845788/HelloService.o \
 	${OBJECTDIR}/qcw.o \
 	${OBJECTDIR}/request_handler.o \
 	${OBJECTDIR}/service_register.o
@@ -63,6 +64,11 @@ LDLIBSOPTIONS=-lpthread -ldl
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/perapaas: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/perapaas ${OBJECTFILES} ${LDLIBSOPTIONS}
+
+${OBJECTDIR}/_ext/399845788/HelloService.o: /home/san/Documents/git-repos/PeraPaaS/1.0.150723/PeraPaas/module/HelloService.c 
+	${MKDIR} -p ${OBJECTDIR}/_ext/399845788
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/399845788/HelloService.o /home/san/Documents/git-repos/PeraPaaS/1.0.150723/PeraPaas/module/HelloService.c
 
 ${OBJECTDIR}/qcw.o: qcw.c 
 	${MKDIR} -p ${OBJECTDIR}
