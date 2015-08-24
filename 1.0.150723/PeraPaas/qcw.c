@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include "ppmsg.h"
+
 #include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
@@ -29,6 +30,8 @@
 int listener_d;
 
 void * request_balancer();
+void add_new_node(struct node * nnode);
+struct node * contain_url(char * url);
 void * request_handler(void * conn);
 void * queue_com();
 void error(char *msg);
@@ -110,16 +113,17 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
+    root = 0;
+    /*
+        root = malloc(sizeof (struct node));
+        root -> next = 0;
 
+        root->hashCode = 10;
+        root ->url = "/hello";
+     */
 
-    struct node * root = malloc(sizeof (struct node));
-    root -> next = 0;
-    
-    root->hashCode = 10;
-    root ->url ="/hello";
-
-
-
+    read_services();
+    display_nodes();
 
 
 
@@ -176,9 +180,8 @@ int main(int argc, char** argv) {
     }
 
 
-    // QCW Handler 
+    //QCW Handler 
     if (pid_qcw_handler == 0) {
-
         while (1) {
             while (read_pointer != msg_pointer) {
                 if (msg_queue[read_pointer].state == 'd') {
@@ -309,14 +312,25 @@ void * request_handler(void * conn) {
         printf("MSSG POINTER %d >>>>>>>>>> %d \n", no, msg_pointer);
 
         //  sleep(1);
-        send(connect_e, reply, strlen(reply), 0);
+
+        //    send(connect_e, reply, strlen(reply), 0);
 
         int line_cnt = 0;
         //      printf("Recieved %d %s\n", no, mesg);
 
         char * mk = strstr(mesg, ref);
         //  mk = strstr(mk, "//");
-        printf("found>>> %s\n", mk);
+        //  printf("found>>> %s\n", mk);
+
+        struct node * cont = contain_url("/hello");
+
+        if (cont != 0) {
+            char * rep = "Welcome";
+            send(connect_e, rep, strlen(rep), 0);
+        } else {
+            send(connect_e, reply, strlen(reply), 0);
+        }
+
 
     }
 }
@@ -325,4 +339,106 @@ void * queue_com() {
 
 
 
+
 }
+
+
+#define CHUNK 1024 /* read 1024 bytes at a time */
+int read_services();
+
+/*
+ * 
+ */
+
+int read_services() {
+
+
+    char buf[CHUNK];
+    int i, count;
+    char appendStr[100];
+
+    FILE *file;
+    size_t nread;
+
+    file = fopen("services.txt", "r");
+    if (file) {
+
+        while ((nread = fread(buf, 1, sizeof buf, file)) > 0) {
+            int i = 0, last = -1;
+            buf[nread] = '\0';
+            //    fwrite(buf, 1, nread, stdout);
+
+            for (i = 0; i < nread; i++) {
+                if (buf[i] == '\n') {
+                    struct node * nnode = (struct node *) malloc(sizeof (struct node));
+                    nnode->url = malloc(sizeof (char) * (i + 1));
+                    nnode ->next = 0;
+                    memcpy(nnode->url, buf + last + 1, i - last - 1);
+                    nnode->url[i] = '\0';
+                    add_new_node(nnode);
+                    //  printf("I %d \n", i);
+                    last = i;
+                }
+            }
+        }
+
+        if (ferror(file)) {
+            /* deal with error */
+        }
+        fclose(file);
+    }
+}
+
+void add_new_node(struct node * nnode) {
+    struct node *n = root;
+
+    /*
+        root = nnode;
+        return;
+     */
+    if (root == 0) {
+        root = nnode;
+        return;
+    }
+
+    while (n->next != 0) {
+        n = n->next;
+    }
+
+    n->next = nnode;
+}
+void display_nodes();
+
+void display_nodes() {
+
+    struct node *n = root;
+
+    if (n == 0) {
+        return;
+    }
+
+    while (n != 0) {
+        printf("Node: %s \n", n->url);
+        n = n->next;
+    }
+}
+
+struct node * contain_url(char * url) {
+    struct node *n = root;
+
+    if (n == 0) {
+        return;
+    }
+
+    while (n != 0) {
+        ///   printf("Node: %s \n", n->url);
+        if (strcmp(n->url, url)) {
+            return n;
+        }
+        n = n->next;
+    }
+    n = 0;
+    return n;
+}
+
+

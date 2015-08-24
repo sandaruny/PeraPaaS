@@ -16,7 +16,11 @@ struct message {
 
 struct node {
     char * url;
-    int  hashCode;
+    int hashCode;
     int serviceid;
     struct node * next;
-}
+};
+
+
+struct node * root;
+
