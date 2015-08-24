@@ -110,6 +110,19 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
+
+
+    struct node * root = malloc(sizeof (struct node));
+    root -> next = 0;
+    
+    root->hashCode = 10;
+    root ->url ="/hello";
+
+
+
+
+
+
     if (bind(sockfd, (struct sockaddr *) &servaddr, sizeof (servaddr)) == -1)
         error("Can't bind the port");
 
@@ -285,7 +298,6 @@ void * request_handler(void * conn) {
         puts(mesg);
 
         if (msg_queue[msg_pointer].state != 's') {
-
             msg_queue[msg_pointer].details = 'hello';
             msg_queue[msg_pointer].state = 'd';
             msg_queue[msg_pointer].msg_id = msg_pointer;
@@ -298,8 +310,6 @@ void * request_handler(void * conn) {
 
         //  sleep(1);
         send(connect_e, reply, strlen(reply), 0);
-
-
 
         int line_cnt = 0;
         //      printf("Recieved %d %s\n", no, mesg);
