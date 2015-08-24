@@ -300,9 +300,7 @@ void * request_handler(void * conn) {
 
 
         mesg[no] = '\0';
-
-        puts(mesg);
-
+        
         puts(mesg);
 
 
@@ -322,7 +320,7 @@ void * request_handler(void * conn) {
 
         //    send(connect_e, reply, strlen(reply), 0);
 
-        send(connect_e, reply, strlen(reply), 0);
+       // send(connect_e, reply, strlen(reply), 0);
 
 
 
@@ -338,7 +336,8 @@ void * request_handler(void * conn) {
         //  printf("found>>> %s\n", mk);
 
         struct node * cont = contain_url("/hello");
-
+        puts("Hello");
+        
         if (cont != 0) {
             char * rep = "Welcome";
             send(connect_e, rep, strlen(rep), 0);
