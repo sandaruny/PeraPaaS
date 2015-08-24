@@ -67,7 +67,8 @@ char *reply =
         "sdfkjsdnbfkjbsf";
 
 //     printf("Recieved: %d\n", web_req_count);
-char * ref = "Referer:";
+char * ref = "GET";
+char * find = "HTTP";
 struct message msg;
 struct message msg_queue[1000];
 
@@ -76,6 +77,7 @@ int sockfd, n;
 struct sockaddr_in servaddr, cliaddr;
 socklen_t len;
 char mesg[1000];
+char getMsg[1000];
 
 
 int connect_d;
@@ -290,7 +292,7 @@ void * request_handler(void * conn) {
 
 
         mesg[no] = '\0';
-        //    puts(mesg);
+            puts(mesg);
 
         if (msg_queue[msg_pointer].state != 's') {
 
@@ -305,16 +307,35 @@ void * request_handler(void * conn) {
         printf("MSSG POINTER %d >>>>>>>>>> %d \n", no, msg_pointer);
 
         //  sleep(1);
-        //send(connect_e, reply, strlen(reply), 0);
+        send(connect_e, reply, strlen(reply), 0);
 
 
 
         int line_cnt = 0;
-        //      printf("Recieved %d %s\n", no, mesg);
+        //      printf("Received %d %s\n", no, mesg);
 
         char * mk = strstr(mesg, ref);
+        char * subStr = strstr(mk, find);
         //  mk = strstr(mk, "//");
-        //    printf("found>>> %s\n", mk);
+        int count1 = strlen(mk);
+        int count2 = strlen(subStr);
+        int count3 = strlen(mesg);
+        int lengthStr = count1 - count2;
+        int startLen = count3 - count1; 
+        
+        int c=0;
+        //printf("%d",lengthStr);
+        
+        while(c<lengthStr-5){
+        
+            //printf('%c',mesg[count1+c-1]);
+            getMsg[c] = mesg[startLen+c+5 ];
+            c++;
+        }
+        
+        getMsg[c] = '\0';
+        
+           printf("found>>> %s \n ", getMsg);
 
     }
 }
