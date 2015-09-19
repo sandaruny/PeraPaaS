@@ -11,7 +11,10 @@
 
 #include  <sys/types.h>
 //#include <time.h>
+#include <fcntl.h>
 #include <sys/time.h>
+#include <sys/stat.h>
+
 #include <stdlib.h>
 #include "ppmsg.h"
 
@@ -22,6 +25,7 @@
 #include <unistd.h>
 
 #include <signal.h>
+
 
 /*
  * 
@@ -34,6 +38,7 @@ void add_new_node(struct node * nnode);
 struct node * contain_url(char * url);
 void * request_handler(void * conn);
 void * queue_com();
+void display_nodes();
 void error(char *msg);
 
 void handle_shutdown(int sig);
@@ -56,6 +61,19 @@ int const QUEUE_SIZE = 100;
 static int pool_size = 0, web_req_count = 0, msg_pointer = 0, read_pointer = 0;
 
 
+char *errorrep =
+        "HTTP/1.1 200 OK\n"
+        "Date: Thu, 19 Feb 2009 12:27:04 GMT\n"
+        "Server: Apache/2.2.3\n"
+        "Last-Modified: Wed, 18 Jun 2003 16:05:58 GMT\n"
+        "ETag: \"56d-9989200-1132c580\"\n"
+        "Content-Type: text/html\n"
+        "Content-Length: 11\n"
+        "Accept-Ranges: bytes\n"
+        "Connection: close\n"
+        "\n"
+        "INVALID URL";
+
 char *reply =
         "HTTP/1.1 200 OK\n"
         "Date: Thu, 19 Feb 2009 12:27:04 GMT\n"
@@ -63,11 +81,12 @@ char *reply =
         "Last-Modified: Wed, 18 Jun 2003 16:05:58 GMT\n"
         "ETag: \"56d-9989200-1132c580\"\n"
         "Content-Type: text/html\n"
-        "Content-Length: 15\n"
+        "Content-Length: 7\n"
         "Accept-Ranges: bytes\n"
         "Connection: close\n"
         "\n"
-        "sdfkjsdnbfkjbsf";
+        "SUCCESS";
+
 
 //     printf("Recieved: %d\n", web_req_count);
 char * ref = "GET";
@@ -79,7 +98,7 @@ int sockfd, n;
 
 struct sockaddr_in servaddr, cliaddr;
 socklen_t len;
-char mesg[1000];
+char mesg[2000];
 char getMsg[1000];
 
 
@@ -141,7 +160,6 @@ int main(int argc, char** argv) {
     time(&rawtime);
     timeinfo = localtime(&rawtime);
     printf("Current local time and date: %s", asctime(timeinfo));
-    //	printf("IP %s\n", servaddr.sin_addr.s_addr);
 
 
     char* banner;
@@ -162,6 +180,7 @@ int main(int argc, char** argv) {
         if (pthread_create(&t0, NULL, request_balancer, NULL) == -1) {
             printf("Error in pthread for request balance");
         }
+        //return 0;
     }
 
 
@@ -175,36 +194,56 @@ int main(int argc, char** argv) {
         error("Error in QCW Process");
     }
 
-    int pipe_qcw[2];
-    if (pipe(pipe_qcw)) {
-        error("Create pipe");
-        return -1;
-    }
+    /*
+        int pipe_qcw[2];
+        if (pipe(pipe_qcw)) {
+            error("Create pipe");
+            return -1;
+        }
+     */
 
 
     //QCW Handler 
     if (pid_qcw_handler == 0) {
-        while (1) {
-            while (read_pointer != msg_pointer) {
-                if (msg_queue[read_pointer].state == 'd') {
-                    send(connect_d, reply, strlen(mesg), 0);
-                    printf("Mesg Dequued %d\n", read_pointer);
-                }
-                read_pointer++;
+
+        char s[300];
+        int num, fd;
+
+        mknod(QCW_FIFO, S_IFIFO | 0666, 0);
+
+        printf("waiting for writers...\n");
+        fd = open(QCW_FIFO, O_RDONLY);
+        printf("got a writer\n");
+
+        do {
+            if ((num = read(fd, s, 300)) == -1)
+                perror("read");
+            else {
+                s[num] = '\0';
+                printf("tick: read %d bytes: \"%s\"\n", num, s);
             }
+        } while (num > 0);
 
-            printf("RP and MP %d : %d \n", read_pointer, msg_pointer);
-            sleep(1);
-        }
 
+        /*
+                while (1) {
+                    while (read_pointer != msg_pointer) {
+                        if (msg_queue[read_pointer].state == 'd') {
+                            //  send(connect_d, reply, strlen(reply), 0);
+                            printf("Mesg Dequued %d\n", read_pointer);
+                        }
+                        read_pointer++;
+                    }
+                    printf("RP and MP %d : %d \n", read_pointer, msg_pointer);
+                    sleep(1);
+                }
+         */
     } else if (pid_qcw_handler > 0) {
         pthread_t t_queue_com;
         if (pthread_create(&t_queue_com, NULL, queue_com, NULL) == -1) {
             printf("Error in pthread for request balance");
         }
     }
-
-
 
     while (1) {
         struct sockaddr_storage client_addr;
@@ -295,13 +334,13 @@ void * request_handler(void * conn) {
             error("Error in recieving");
 
         } else if (no == 0) {
-            return 1;
+            return 0;
         }
 
 
         mesg[no] = '\0';
-        
-        puts(mesg);
+
+        //puts(mesg);
 
 
         if (msg_queue[msg_pointer].state != 's') {
@@ -311,6 +350,7 @@ void * request_handler(void * conn) {
             msg_queue[msg_pointer].connection_id = connect_e;
 
         }
+
         ++msg_pointer;
 
         printf("MSSG POINTER %d >>>>>>>>>> %d \n", no, msg_pointer);
@@ -320,31 +360,13 @@ void * request_handler(void * conn) {
 
         //    send(connect_e, reply, strlen(reply), 0);
 
-       // send(connect_e, reply, strlen(reply), 0);
-
-
-
-
+        //send(connect_e, reply, strlen(reply), 0);
 
         int line_cnt = 0;
         //      printf("Received %d %s\n", no, mesg);
 
         char * mk = strstr(mesg, ref);
         char * subStr = strstr(mk, find);
-        //  mk = strstr(mk, "//");
-
-        //  printf("found>>> %s\n", mk);
-
-        struct node * cont = contain_url("/hello");
-        puts("Hello");
-        
-        if (cont != 0) {
-            char * rep = "Welcome";
-            send(connect_e, rep, strlen(rep), 0);
-        } else {
-            send(connect_e, reply, strlen(reply), 0);
-        }
-
 
         int count1 = strlen(mk);
         int count2 = strlen(subStr);
@@ -355,28 +377,51 @@ void * request_handler(void * conn) {
         int c = 0;
         //printf("%d",lengthStr);
 
-        while (c < lengthStr - 5) {
+        while (c + 1 < lengthStr - 4) {
 
             //printf('%c',mesg[count1+c-1]);
-            getMsg[c] = mesg[startLen + c + 5 ];
+            getMsg[c] = mesg[startLen + c + 4 ];
             c++;
         }
 
         getMsg[c] = '\0';
-
         printf("found>>> %s \n ", getMsg);
 
-        printf("found>>> %s\n", mk);
+        struct node * cont = contain_url(getMsg);
 
+        if (cont != 0) {
+            printf("Sendf\n");
+            send(connect_e, reply, strlen(reply), 0);
+        } else {
+            send(connect_e, errorrep, strlen(errorrep), 0);
+        }
+
+
+        // printf("found>>> %s\n", mk);
+
+        return 0;
 
     }
 }
 
 void * queue_com() {
 
+    char msgrd[] = "Hello QCW ";
+    int num, fd;
+    mknod(QCW_FIFO, S_IFIFO | 0666, 0);
+    printf("waiting for readers...\n");
+    fd = open(QCW_FIFO, O_WRONLY);
+    printf("got a reader--type some stuff\n");
 
 
+    while (1) {
 
+        if ((num = write(fd, msgrd, strlen(msgrd))) == -1)
+            perror("write");
+        else
+            printf("speak: wrote %d bytes\n", num);
+        sleep(1);
+    }
 }
 
 
@@ -397,7 +442,7 @@ int read_services() {
     FILE *file;
     size_t nread;
 
-    file = fopen("services.txt", "r");
+    file = fopen("service.txt", "r");
     if (file) {
 
         while ((nread = fread(buf, 1, sizeof buf, file)) > 0) {
@@ -444,7 +489,6 @@ void add_new_node(struct node * nnode) {
 
     n->next = nnode;
 }
-void display_nodes();
 
 void display_nodes() {
 
@@ -468,8 +512,8 @@ struct node * contain_url(char * url) {
     }
 
     while (n != 0) {
-        ///   printf("Node: %s \n", n->url);
-        if (strcmp(n->url, url)) {
+        //    printf("Node: %s %d >> %s %d \n", n->url, strlen(n->url), url,strlen(url));
+        if (strcmp(n->url, url) == 0) {
             return n;
         }
         n = n->next;

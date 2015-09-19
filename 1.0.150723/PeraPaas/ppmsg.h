@@ -24,3 +24,5 @@ struct node {
 
 struct node * root;
 
+#define QCW_FIFO  "QCW_FIFO"
+

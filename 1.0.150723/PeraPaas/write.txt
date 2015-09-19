@@ -1,9 +1,6 @@
-
-pakaya
+app101
 namodaya
-yasas
-
-
-bala
+php-mysql
+app102
 arachchi
-hutta
+php-mysql
